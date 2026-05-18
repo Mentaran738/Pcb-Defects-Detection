@@ -10,7 +10,7 @@ const { Header, Content, Footer } = Layout;
 
 const App: React.FC = () => {
   return (
-    <Layout>
+    <Layout style={{ minHeight: "100vh" }}>
       
       <Header style={{ display: 'flex', alignItems: 'center' }}>
         <Text style={{ color: "white", margin: 0, fontSize:"45px" }}>Система распознавания дефектов печатных плат</Text>

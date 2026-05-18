@@ -17,10 +17,10 @@ async def process_images():
         for filename in os.listdir(IMAGE_FOLDER):
             if filename.endswith((".jpg", ".png", ".JPG")):
 
-                # === ЧТЕНИЕ ИЗОБРАЖЕНИЯ ===
+
                 image_path = os.path.join(IMAGE_FOLDER, filename)
                 img = cv2.imread(image_path)
-                # === ИНФЕРЕНС YOLO ===
+
                 results = model(img)
                 print(model.device)
                 detections = results[0].boxes.data.tolist()
