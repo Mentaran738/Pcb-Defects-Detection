@@ -10,7 +10,7 @@ import cv2
 import os
 
 model = YOLO(MODEL_PATH)  # загрузка модели
-
+print(model.names)
 
 async def process_images():
     while True:
