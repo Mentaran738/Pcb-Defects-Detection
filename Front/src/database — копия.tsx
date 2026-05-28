@@ -50,7 +50,7 @@ const Database: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-  const [defectFilter, setDefectFilter] = useState<string | undefined>();
+  const [defectFilter, setDefectFilter] = useState<string | null>(null);
   const [defectOptions, setDefectOptions] = useState<string[]>([]);
 
   const getData = async () => {
@@ -74,14 +74,14 @@ const Database: React.FC = () => {
   };
 
   useEffect(() => {
-  if (!defectFilter) {
-    setFilteredInspections(inspections);
-  } else {
-    setFilteredInspections(
-      inspections.filter((item) => item.defects[defectFilter] > 0)
-    );
-  }
-}, [defectFilter, inspections]);
+    if (defectFilter === null) {
+      setFilteredInspections(inspections);
+    } else {
+      setFilteredInspections(
+        inspections.filter((item) => item.defects[defectFilter] > 0)
+      );
+    }
+  }, [defectFilter, inspections]);
 
   const onSelectChange = (keys: React.Key[]) => setSelectedRowKeys(keys);
 
@@ -104,7 +104,7 @@ const Database: React.FC = () => {
     }
   };
 
-  const handleFilterChange = (value: string | undefined) => {
+  const handleFilterChange = (value: string | null) => {
     setDefectFilter(value);
   };
 
