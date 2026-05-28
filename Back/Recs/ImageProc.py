@@ -68,7 +68,6 @@ async def process_images():
                 output_path = os.path.join(OUTPUT_FOLDER_IMG, filename)
                 cv2.imwrite(output_path, img)
 
-                # === СОХРАНЕНИЕ РЕЗУЛЬТАТОВ ===
                 try:
                     # Валидируем дефекты
                     DefectClass(defects=defect_counts)
@@ -78,7 +77,6 @@ async def process_images():
                     with open(json_path, "w", encoding="utf-8") as json_file:
                         json.dump(defect_counts, json_file, indent=4, ensure_ascii=False)
 
-                    # === ЗАПИСЬ В БД С ИСПОЛЬЗОВАНИЕМ async FOR ===
                     async for session in get_session():
                         inspection = Inspection(
                             filename=filename,
@@ -87,7 +85,7 @@ async def process_images():
                         )
                         session.add(inspection)
                         await session.commit()
-                        break   # ОБЯЗАТЕЛЬНО — иначе генератор продолжит бесконечно
+                        break
 
                 except ValueError:
                     print("Invalid Value")
