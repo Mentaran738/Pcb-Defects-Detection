@@ -3,7 +3,6 @@ import { Image, Typography, theme } from "antd";
 
 const { Text, Title } = Typography;
 
-// URL для WebSocket-соединения
 const WEBSOCKET_URL = "ws://localhost:8000/ws";
 
 const ProcessedImage: React.FC = () => {
@@ -15,10 +14,9 @@ const ProcessedImage: React.FC = () => {
   const [detections, setDet] = useState<string[]>([]);
 
   useEffect(() => {
-    // Установка соединения WebSocket
+
     const socket = new WebSocket(WEBSOCKET_URL);
 
-    // Получение данных с сервера
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data);
       if (data.image) setImageUrl(data.image);

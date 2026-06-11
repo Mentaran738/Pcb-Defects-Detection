@@ -14,17 +14,13 @@ import asyncio
 import json
 import logging
 
-# Создание FastAPI приложения
 app = FastAPI()
 
-# Подключение директории с изображениями как статических файлов
 app.mount("/out", StaticFiles(directory="out"), name="out")
 
-# Настройка логирования
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# Настройка базы данных
 DATABASE_URL = "postgresql+asyncpg://postgres:12321@localhost:5432/pcb_defects"
 engine = create_async_engine(DATABASE_URL, echo=True)
 AsyncSessionLocal = async_sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -41,7 +37,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Lifespan для управления жизненным циклом приложения
 @asynccontextmanager
 async def lifespan(app):
     logger.info("Запуск приложения, инициализация базы данных")
@@ -53,7 +48,6 @@ async def lifespan(app):
 
 app = FastAPI(lifespan=lifespan)
 
-# Подключение директории с изображениями как статических файлов
 app.mount("/out", StaticFiles(directory="out"), name="out")
 
 app.add_middleware(
@@ -64,13 +58,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Хранение активных соединений WebSocket
 active_connections = set()
 
-# Последнее отправленное изображение
 last_image = None
 
-# Подключение по WebSocket
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     logger.info("Достигнут WebSocket endpoint")
@@ -80,7 +71,6 @@ async def websocket_endpoint(websocket: WebSocket):
     try:
         global last_image
         logger.info(f"WebSocket подключен, last_image: {last_image}, OUTPUT_FOLDER_IMG: {OUTPUT_FOLDER_IMG}")
-        # При подключении отправляем последнее изображение, если оно есть
         if last_image:
             image_path = os.path.join(OUTPUT_FOLDER_IMG, last_image)
             logger.info(f"Проверка last_image: {image_path}, существует: {os.path.exists(image_path)}")
@@ -89,7 +79,6 @@ async def websocket_endpoint(websocket: WebSocket):
             else:
                 logger.warning(f"Последнее изображение не найдено: {image_path}")
         
-        # Проверка папки с изображениями каждые 2 секунды
         while True:
             if not active_connections:
                 logger.info("Нет активных соединений, выход из цикла")
@@ -104,7 +93,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         last_image = newest_file
                 else:
                     logger.debug("Нет файлов в OUTPUT_FOLDER_IMG")
-                await asyncio.sleep(2)  # Уменьшено до 2 секунд
+                await asyncio.sleep(2)
             except Exception as e:
                 logger.error(f"Ошибка при проверке файлов: {e}", exc_info=True)
     except Exception as e:
@@ -113,7 +102,6 @@ async def websocket_endpoint(websocket: WebSocket):
         logger.info(f"WebSocket отключен, клиент: {websocket.client}")
         active_connections.discard(websocket)
 
-# Функция отправки изображения и данных о дефектах по WebSocket
 async def send_img(image_url: str, websocket: WebSocket = None):
     logger.info(f"Вызвана функция send_img с файлом: {image_url}")
     json_url = os.path.join(OUTPUT_FOLDER_JSON, f"{os.path.splitext(image_url)[0]}.json")
@@ -132,7 +120,7 @@ async def send_img(image_url: str, websocket: WebSocket = None):
         logger.info(f"Загружены дефекты: {defect_data}")
         
         try:
-            defects = DefectClass(defects=defect_data)  # Валидация структуры данных
+            defects = DefectClass(defects=defect_data)
             image_url = os.path.join(local, image_url)
             data = {"image": image_url, "defects": defect_data}
             logger.info(f"Подготовлены данные для отправки: {data}")
@@ -155,7 +143,6 @@ async def send_img(image_url: str, websocket: WebSocket = None):
     except Exception as e:
         logger.error(f"Ошибка при обработке JSON {json_url}: {e}", exc_info=True)
 
-# Получение всех записей из базы данных
 @app.get("/database")
 async def get_all_inspections(session: AsyncSession = Depends(get_session)):
     logger.info("Запрос к /database")
@@ -179,7 +166,7 @@ async def get_all_inspections(session: AsyncSession = Depends(get_session)):
             logger.error(f"Ошибка при получении inspections: {e}", exc_info=True)
             raise
 
-# Удаление записей по ID, полученным от клиента
+
 @app.delete("/inspections")
 async def delete_inspections(request: DeleteInspectionsRequest, session: AsyncSession = Depends(get_session)):
     logger.info(f"Запрос на удаление inspections с IDs: {request.ids}")

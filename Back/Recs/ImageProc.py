@@ -10,7 +10,7 @@ import json
 import cv2
 import os
 
-model = YOLO(MODEL_PATH)  # загрузка модели
+model = YOLO(MODEL_PATH)
 print(model.names)
 
 async def process_images():
@@ -29,12 +29,10 @@ async def process_images():
                 defect_counts = {}
 
                 for i in range(len(detections)):
-                    # Перестановка координат
                     temp = detections[i][1]
                     detections[i][1] = detections[i][2]
                     detections[i][2] = temp
 
-                    # Формирование точек для полигона
                     points = []
                     for j in range(2):
                         for k in range(2, 4):
@@ -61,18 +59,17 @@ async def process_images():
 
                     img = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
 
-                # Удаляем исходное изображение
                 os.remove(image_path)
 
-                # Сохраняем обработанное изображение
+
                 output_path = os.path.join(OUTPUT_FOLDER_IMG, filename)
                 cv2.imwrite(output_path, img)
 
                 try:
-                    # Валидируем дефекты
+
                     DefectClass(defects=defect_counts)
 
-                    # Сохраняем JSON
+
                     json_path = os.path.join(OUTPUT_FOLDER_JSON, filename.rsplit(".", 1)[0] + ".json")
                     with open(json_path, "w", encoding="utf-8") as json_file:
                         json.dump(defect_counts, json_file, indent=4, ensure_ascii=False)
